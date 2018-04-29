@@ -1,0 +1,75 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'English'
+require 'getoptlong'
+require 'json'
+
+VERSION = '1.0.0'
+
+def run(command, puts_result: false)
+  result = `#{command}`
+  STDERR.puts result if puts_result
+  raise "Command `#{command}` exited with code #{$CHILD_STATUS.exitstatus}" unless $CHILD_STATUS.success?
+  result
+end
+
+def usage
+  STDERR.puts <<~USAGE
+    usage: #{File.basename(__FILE__)} [ckan_ksp_name] [netkan_file] [options]
+        -h, --help                  print help
+        --version                   print the version
+        -x, --exclude [identifier]  exclude mod with this identifier (do not install)
+        -v, --verbose               verbose logging
+  USAGE
+end
+
+opts = GetoptLong.new(
+  ['--exclude', '-x', GetoptLong::REQUIRED_ARGUMENT],
+  ['--help', '-h', GetoptLong::NO_ARGUMENT],
+  ['--verbose', '-v', GetoptLong::NO_ARGUMENT],
+  ['--version', GetoptLong::NO_ARGUMENT],
+)
+
+exclude_mods = []
+verbose = false
+
+opts.each do |opt, arg|
+  case opt
+  when '--help'
+    usage
+    exit
+  when '--exclude'
+    exclude_mods << arg
+  when '--verbose'
+    verbose = true
+  when '--version'
+    puts VERSION
+    exit
+  end
+end
+
+if ARGV.size != 2
+  STDERR.puts('Wrong number of arguments')
+  usage
+  exit 1
+end
+
+ckan_ksp_name = ARGV[0]
+netkan_file = ARGV[1]
+
+unless File.exist?(netkan_file)
+  STDERR.puts "'#{netkan_file}' is not a file"
+  exit 1
+end
+
+STDERR.puts "Installing NetKAN dependencies in CKAN KSP instance '#{ckan_ksp_name}' from NetKAN file '#{netkan_file}'"
+
+netkan_contents = JSON.parse(File.read(netkan_file))
+dependencies = netkan_contents['depends'].map { |h| h['name'] }
+
+dependencies.each do |dependency|
+  next if exclude_mods.include? dependency
+  STDERR.puts "Installing #{dependency}"
+  run("ckan install --headless --no-recommends --ksp '#{ckan_ksp_name}' #{dependency}", puts_result: true)
+end

@@ -1,0 +1,32 @@
+#!/usr/bin/env sh
+
+set -e
+
+if [ $# -eq 3 ]
+then
+  ksp_dir="${1}"
+  ksp_install_name="${2}"
+  ksp_version="${3}"
+else
+  echo "Usage - $0 [ksp_dir] [ksp_install_name] [ksp_version]" >&2
+  exit 1
+fi
+
+rm -rfv "${ksp_dir}"
+mkdir -pv \
+  "${ksp_dir}" \
+  "${ksp_dir}/CKAN" \
+  "${ksp_dir}/GameData" \
+  "${ksp_dir}/Ships" \
+  "${ksp_dir}/Ships/VAB" \
+  "${ksp_dir}/Ships/SPH" \
+  "${ksp_dir}/Ships/@thumbs" \
+  "${ksp_dir}/Ships/@thumbs/VAB" \
+  "${ksp_dir}/Ships/@thumbs/SPH" \
+  >&2
+echo "Version ${ksp_version}" > "${ksp_dir}/readme.txt"
+
+ln -sv "/var/tmp/ckan/downloads" "${ksp_dir}/CKAN/downloads" >&2
+ckan ksp forget "${ksp_install_name}" || echo 'false' >/dev/null
+ckan ksp add "${ksp_install_name}" "${ksp_dir}"
+ckan update --ksp "${ksp_install_name}"

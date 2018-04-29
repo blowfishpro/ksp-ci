@@ -1,0 +1,22 @@
+#!/usr/bin/env sh
+
+set -e
+
+ckan_dir='/opt/ckan'
+ckan_downloads_dir='/var/tmp/ckan/downloads'
+
+rm -rfv "${ckan_dir}"
+mkdir -pv "${ckan_dir}" "${ckan_downloads_dir}"
+chmod 777 "${ckan_downloads_dir}"
+
+curl 'https://ckan-travis.s3.amazonaws.com/ckan.exe' -o "${ckan_dir}/ckan.exe"
+
+cat << EOF > "${ckan_dir}/ckan"
+#!/usr/bin/env sh
+set -e
+mono '${ckan_dir}/ckan.exe' \${@}
+EOF
+
+chmod +x "${ckan_dir}/ckan"
+rm -f '/usr/local/bin/ckan'
+ln -sv "${ckan_dir}/ckan" '/usr/local/bin/ckan'
