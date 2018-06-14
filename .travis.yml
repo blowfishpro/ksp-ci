@@ -5,3 +5,9 @@ rvm:
 notifications:
   email: false
 before_install: gem install bundler -v 1.16.2
+deploy:
+  - provider: releases
+    api_key: ${GITHUB_DEPLOY_TOKEN}
+    name: KSP-CI ${TRAVIS_TAG}
+    on:
+      tags: true
