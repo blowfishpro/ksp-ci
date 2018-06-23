@@ -192,6 +192,26 @@ RSpec.describe 'fill-version' do
     end
   end
 
+  context 'git version' do
+    it 'is nil when not in a git directory' do
+      in_tmp_dir do
+        s = `echo '^^<%= git_version.inspect %>$$' | #{command} -k 0.0.0 -m 0.0.0`
+        expect($CHILD_STATUS.success?).to be(true)
+        expect(s.strip).to eq('^^nil$$')
+      end
+    end
+
+    it 'contains the full git version when in a git directory' do
+      in_git_dir(commits: 1, tag: 'v1.2.3', commits_since_tag: 1) do
+        s = `echo '^^<%= git_version %>$$' | #{command} -k 0.0.0 -m 0.0.0`
+        expect($CHILD_STATUS.success?).to be(true)
+        git_revsion = `git rev-parse HEAD`
+        expect($CHILD_STATUS.success?).to be(true)
+        expect(s.strip).to eq("^^v1.2.3-1-g#{git_revsion[0...7]}$$")
+      end
+    end
+  end
+
   it 'reads from an input file' do
     Tempfile.open(['template', '.erb']) do |tempfile|
       tempfile.write('^^<%= ksp_version %>&&<%= mod_version %>$$')

@@ -6,7 +6,7 @@ require 'getoptlong'
 require 'json'
 require 'open3'
 
-VERSION = '1.0.1'
+VERSION = '1.1.0'
 
 class Version
   def initialize(str)
@@ -41,7 +41,7 @@ class Version
   end
 end
 
-FillVersionViewModel = Struct.new(:ksp_version, :ksp_version_min, :ksp_version_max, :mod_version) do
+FillVersionViewModel = Struct.new(:ksp_version, :ksp_version_min, :ksp_version_max, :mod_version, :git_version) do
   def render(template)
     ERB.new(template).result(binding)
   end
@@ -146,7 +146,7 @@ is_git_dir =
     false
   end
 
-git_version = is_git_dir ? run('git describe --tags --dirty') : nil
+git_version = is_git_dir ? run('git describe --tags --dirty').strip : nil
 
 mod_version =
   if !mod_version.nil?
@@ -179,7 +179,7 @@ template_contents =
     exit 1
   end
 
-view_model = FillVersionViewModel.new(ksp_version, ksp_version_min, ksp_version_max, mod_version)
+view_model = FillVersionViewModel.new(ksp_version, ksp_version_min, ksp_version_max, mod_version, git_version)
 result = view_model.render(template_contents)
 
 if out_file.nil?
