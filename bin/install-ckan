@@ -3,11 +3,9 @@
 set -e
 
 ckan_dir='/opt/ckan'
-ckan_downloads_dir='/var/tmp/ckan/downloads'
 
 rm -rfv "${ckan_dir}"
-mkdir -pv "${ckan_dir}" "${ckan_downloads_dir}"
-chmod 777 "${ckan_downloads_dir}"
+mkdir -pv "${ckan_dir}"
 
 curl 'https://ckan-travis.s3.amazonaws.com/ckan.exe' -o "${ckan_dir}/ckan.exe"
 

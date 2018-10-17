@@ -26,7 +26,6 @@ mkdir -pv \
   >&2
 echo "Version ${ksp_version}" > "${ksp_dir}/readme.txt"
 
-ln -sv "/var/tmp/ckan/downloads" "${ksp_dir}/CKAN/downloads" >&2
 ckan ksp forget "${ksp_install_name}" || echo 'false' >/dev/null
 ckan ksp add "${ksp_install_name}" "${ksp_dir}"
 ckan update --ksp "${ksp_install_name}"
