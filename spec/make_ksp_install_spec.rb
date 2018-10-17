@@ -40,7 +40,6 @@ RSpec.describe 'make-ksp-install' do
         expect(Dir.exist?(File.join(ksp_install_dir, 'Ships', '@thumbs'))).to be(true)
         expect(Dir.exist?(File.join(ksp_install_dir, 'Ships', '@thumbs', 'VAB'))).to be(true)
         expect(Dir.exist?(File.join(ksp_install_dir, 'Ships', '@thumbs', 'SPH'))).to be(true)
-        expect(File.readlink(File.join(ksp_install_dir, 'CKAN', 'downloads'))).to eq('/var/tmp/ckan/downloads')
         expect(File.read(File.join(ksp_install_dir, 'readme.txt'))).to eq("Version 1.2.3\n")
       end
     end
