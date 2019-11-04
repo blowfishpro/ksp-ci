@@ -51,3 +51,5 @@ build-iPhoneSimulator/
 
 # Rspec status file
 .rspec_status
+
+Gemfile.lock

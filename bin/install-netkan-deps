@@ -9,13 +9,14 @@ VERSION = '1.0.0'
 
 def run(command, puts_result: false)
   result = `#{command}`
-  STDERR.puts result if puts_result
+  warn result if puts_result
   raise "Command `#{command}` exited with code #{$CHILD_STATUS.exitstatus}" unless $CHILD_STATUS.success?
+
   result
 end
 
 def usage
-  STDERR.puts <<~USAGE
+  warn <<~USAGE
     usage: #{File.basename(__FILE__)} [ckan_ksp_name] [netkan_file] [options]
         -h, --help                  print help
         --version                   print the version
@@ -50,7 +51,7 @@ opts.each do |opt, arg|
 end
 
 if ARGV.size != 2
-  STDERR.puts('Wrong number of arguments')
+  warn('Wrong number of arguments')
   usage
   exit 1
 end
@@ -59,17 +60,18 @@ ckan_ksp_name = ARGV[0]
 netkan_file = ARGV[1]
 
 unless File.exist?(netkan_file)
-  STDERR.puts "'#{netkan_file}' is not a file"
+  warn "'#{netkan_file}' is not a file"
   exit 1
 end
 
-STDERR.puts "Installing NetKAN dependencies in CKAN KSP instance '#{ckan_ksp_name}' from NetKAN file '#{netkan_file}'"
+warn "Installing NetKAN dependencies in CKAN KSP instance '#{ckan_ksp_name}' from NetKAN file '#{netkan_file}'"
 
 netkan_contents = JSON.parse(File.read(netkan_file))
 dependencies = netkan_contents['depends'].map { |h| h['name'] }
 
 dependencies.each do |dependency|
   next if exclude_mods.include? dependency
-  STDERR.puts "Installing #{dependency}"
+
+  warn "Installing #{dependency}"
   run("ckan install --headless --no-recommends --ksp '#{ckan_ksp_name}' #{dependency}", puts_result: true)
 end
