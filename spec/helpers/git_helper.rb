@@ -10,6 +10,7 @@ module GitHelper
         ].flatten.compact.join(" &&\n")
         `#{git_command}`
         raise "git command exited with status #{$CHILD_STATUS.exitstatus}" unless $CHILD_STATUS.success?
+
         yield dir
       end
     end
