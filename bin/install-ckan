@@ -1,20 +1,31 @@
-#!/usr/bin/env sh
+#!/usr/bin/env ruby
+# frozen_string_literal: true
 
-set -e
+require 'open3'
+require 'rest-client'
 
-ckan_dir='/opt/ckan'
+CKAN_DIR = File.join('/', 'opt', 'ckan')
+CKAN_FILE = File.join(CKAN_DIR, 'ckan.exe')
+CKAN_EXECUTABLE = File.join('/', 'usr', 'local', 'bin', 'ckan')
 
-rm -rfv "${ckan_dir}"
-mkdir -pv "${ckan_dir}"
+out, status = Open3.capture2('which mono')
+raise 'mono is not installed' unless status.success? && !out.empty?
 
-curl 'https://ckan-travis.s3.amazonaws.com/ckan.exe' -o "${ckan_dir}/ckan.exe"
+FileUtils::Verbose.rm_f CKAN_DIR
+FileUtils::Verbose.mkdir_p CKAN_DIR
 
-cat << EOF > "${ckan_dir}/ckan"
-#!/usr/bin/env sh
-set -e
-mono '${ckan_dir}/ckan.exe' \${@}
-EOF
+response = RestClient::Request.execute(
+  method: :get,
+  url: 'https://ckan-travis.s3.amazonaws.com/ckan.exe',
+  raw_response: true,
+)
 
-chmod +x "${ckan_dir}/ckan"
-rm -f '/usr/local/bin/ckan'
-ln -sv "${ckan_dir}/ckan" '/usr/local/bin/ckan'
+FileUtils::Verbose.cp(response.file.path, CKAN_FILE)
+
+File.write CKAN_EXECUTABLE, <<~SH
+  #!/usr/bin/env sh
+  set -e
+  mono '#{CKAN_FILE}' ${@}
+SH
+
+FileUtils::Verbose.chmod 0o755, CKAN_EXECUTABLE
