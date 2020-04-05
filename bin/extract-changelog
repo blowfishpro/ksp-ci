@@ -1,0 +1,140 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'getoptlong'
+require 'immutable-struct'
+require 'kramdown'
+
+VESION_REGEX = /v(?<version>\d(?:[\d\.]*\d)?)/.freeze
+
+VERSION = '0.1'
+
+ChangelogVersion = ImmutableStruct.new(:version, :raw_version, [:content])
+
+def usage
+  warn <<~USAGE
+    usage: #{File.basename(__FILE__)} [options]
+      -h, --help                      print help
+      --version                       print the version
+      -v, --verbose                   verbose logging
+      -i, --in-file [path]            path to input markdown file, otherwise use stdin
+      -o, --out-file [path]           path to output markdown file, otherwise use stdout
+      -u, --upto-version [version]    collect all version changelogs up to this version_only
+      -s, --single-version [version]  output only changelog for this version
+  USAGE
+end
+
+opts = GetoptLong.new(
+  ['--help', '-h', GetoptLong::NO_ARGUMENT],
+  ['--verbose', '-v', GetoptLong::NO_ARGUMENT],
+  ['--version', GetoptLong::NO_ARGUMENT],
+  ['--in-file', '-i', GetoptLong::REQUIRED_ARGUMENT],
+  ['--out-file', '-o', GetoptLong::REQUIRED_ARGUMENT],
+  ['--upto-version', '-u', GetoptLong::REQUIRED_ARGUMENT],
+  ['--single-version', '-s', GetoptLong::REQUIRED_ARGUMENT],
+)
+
+verbose = false
+in_file_path = nil
+out_file_path = nil
+upto_version = nil
+single_version = nil
+
+opts.each do |opt, arg|
+  case opt
+  when '--help'
+    usage
+    exit
+  when '--version'
+    puts VERSION
+    exit
+  when '--verbose'
+    verbose = true
+  when '--in-file'
+    in_file_path = arg
+  when '--out-file'
+    out_file_path = arg
+  when '--upto-version'
+    upto_version = arg
+  when '--single-version'
+    single_version = arg
+  end
+end
+
+raise 'Cannot use both upto-version and single-version' if upto_version && single_version
+raise 'Need upto-version or single-version' if upto_version.nil? && single_version.nil?
+
+in_file_contents = in_file_path.nil? ? $stdin.read : File.read(in_file_path)
+
+raise 'input is empty!' if in_file_contents.strip.empty?
+
+document = Kramdown::Document.new(in_file_contents)
+
+changelog_versions = []
+current_version = nil
+
+document.root.children.each do |child|
+  if child.type == :header && child.children[0].value =~ VESION_REGEX
+    raw_version = child.children[0].value
+    version_match = raw_version.match VESION_REGEX
+    current_version = ChangelogVersion.new(version: Gem::Version.new(version_match[:version]), raw_version: raw_version)
+    changelog_versions << current_version
+  elsif child.type == :header
+    current_version = nil
+  elsif current_version
+    current_version.content << child
+  end
+end
+
+changelog_versions.each do |content:, **|
+  content.shift while content.first.type == :blank
+  content.pop while content.last.type == :blank
+end
+
+if single_version
+  selected_versions = changelog_versions.select do |version|
+    version.raw_version == single_version
+  end
+
+  raise "No versions found matching #{single_version}" if selected_versions.empty?
+
+  if selected_versions.size > 1
+    raise "Too many (#{selected_versions.size}) versions found matching #{single_version} (expected exactly one)"
+  end
+elsif upto_version
+  version_match = upto_version.match VESION_REGEX
+  current_version = Gem::Version.new(version_match[:version])
+  selected_versions = changelog_versions.select do |version|
+    version.version <= current_version
+  end
+
+  selected_versions.sort! do |v1, v2|
+    -(v1.version <=> v2.version)
+  end
+
+  raise "No versions found up to #{upto_version}" if selected_versions.empty?
+  raise "First version is not #{upto_version}" if selected_versions.first.raw_version != upto_version
+else
+  raise 'nothing to do!'
+end
+
+new_root = Kramdown::Element.new(:root, nil, nil, encoding: Encoding::UTF_8)
+
+selected_versions.each do |changelog_version|
+  header = Kramdown::Element.new(:header, nil, nil, level: 3)
+  header.children << Kramdown::Element.new(:text, changelog_version.raw_version)
+  new_root.children << header
+  new_root.children << Kramdown::Element.new(:blank, "\n")
+  new_root.children.concat changelog_version.content
+  new_root.children << Kramdown::Element.new(:blank, "\n")
+end
+
+result = Kramdown::Converter::Kramdown.convert(new_root).first
+
+result = result.delete_suffix("\n") while result.end_with? "\n\n"
+
+if out_file_path
+  File.write(out_file_path, result)
+else
+  puts result
+end
