@@ -1,7 +1,6 @@
 source 'https://rubygems.org'
 
-gem 'immutable-struct', '~> 2.4'
-gem 'kramdown', '~> 2.1'
+gemspec
 
 group :development, :test do
   gem 'bundler', '~> 1.17'
