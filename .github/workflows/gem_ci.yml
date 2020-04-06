@@ -34,7 +34,7 @@ jobs:
       - name: Upload built gem
         uses: actions/upload-artifact@v2-preview
         with:
-          name: ksp-ci.gem
+          name: built-gem
           path: "*.gem"
   publish:
     name: Publish to Github Packages
@@ -53,9 +53,9 @@ jobs:
     - name: Download built gem
       uses: actions/download-artifact@v1
       with:
-        name: ksp-ci.gem
+        name: built-gem
     - name: Publish
-      run: gem push --KEY github --host https://rubygems.pkg.github.com/${OWNER} ksp-ci.gem
+      run: gem push --KEY github --host https://rubygems.pkg.github.com/${OWNER} built-gem/ksp-ci.gem
       env:
         GEM_HOST_API_KEY: ${{secrets.GPR_AUTH_TOKEN}}
         OWNER: username
