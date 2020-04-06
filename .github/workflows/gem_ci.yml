@@ -50,12 +50,13 @@ jobs:
         touch $HOME/.gem/credentials
         chmod 0600 $HOME/.gem/credentials
         printf -- "---\n:github: Bearer ${GEM_HOST_API_KEY}\n" > $HOME/.gem/credentials
+    - name: Set repo owner env
+      run: echo "::set-env name=REPO_OWNER::$(echo "${GITHUB_REPOSITORY}" | cut -d '/' -f 1)"
     - name: Download built gem
       uses: actions/download-artifact@v1
       with:
         name: built-gem
     - name: Publish
-      run: gem push --KEY github --host https://rubygems.pkg.github.com/${OWNER} built-gem/*.gem
+      run: gem push --KEY github --host https://rubygems.pkg.github.com/${REPO_OWNER} built-gem/*.gem
       env:
         GEM_HOST_API_KEY: ${{secrets.GPR_AUTH_TOKEN}}
-        OWNER: username
