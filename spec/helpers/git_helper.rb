@@ -4,6 +4,8 @@ module GitHelper
       Dir.chdir(dir) do
         git_command = [
           'git init',
+          'git config user.name test',
+          'git config user.email test@example.com',
           Array.new(commits) { |index| "git commit --allow-empty -m 'commit #{index}'" },
           tag.nil? ? nil : "git tag '#{tag}'",
           Array.new(commits_since_tag) { |index| "git commit --allow-empty -m 'later commit #{index}'" },

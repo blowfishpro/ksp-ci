@@ -5,9 +5,9 @@ require 'getoptlong'
 require 'immutable-struct'
 require 'kramdown'
 
-VESION_REGEX = /v(?<version>\d(?:[\d\.]*\d)?)/.freeze
+require 'ksp_ci'
 
-VERSION = '0.1'
+VESION_REGEX = /v(?<version>\d(?:[\d\.]*\d)?)/.freeze
 
 ChangelogVersion = ImmutableStruct.new(:version, :raw_version, [:content])
 
@@ -46,7 +46,7 @@ opts.each do |opt, arg|
     usage
     exit
   when '--version'
-    puts VERSION
+    puts KSPCI::VERSION
     exit
   when '--verbose'
     verbose = true

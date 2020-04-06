@@ -1,31 +1,39 @@
-#!/usr/bin/env sh
+#!/usr/bin/env ruby
+# frozen_string_literal: true
 
-set -e
+require 'open3'
 
-if [ $# -eq 3 ]
-then
-  ksp_dir="${1}"
-  ksp_install_name="${2}"
-  ksp_version="${3}"
-else
-  echo "Usage - $0 [ksp_dir] [ksp_install_name] [ksp_version]" >&2
+def run(cmd)
+  out, status = Open3.capture2(cmd)
+  raise "Command failed with exit code #{status.exitstatus}" unless status.success?
+
+  out
+end
+
+if ARGV.size != 3
+  warn "Usage - #{File.basename(__FILE__)} [ksp_dir] [ksp_install_name] [ksp_version]"
   exit 1
-fi
+end
 
-rm -rfv "${ksp_dir}"
-mkdir -pv \
-  "${ksp_dir}" \
-  "${ksp_dir}/CKAN" \
-  "${ksp_dir}/GameData" \
-  "${ksp_dir}/Ships" \
-  "${ksp_dir}/Ships/VAB" \
-  "${ksp_dir}/Ships/SPH" \
-  "${ksp_dir}/Ships/@thumbs" \
-  "${ksp_dir}/Ships/@thumbs/VAB" \
-  "${ksp_dir}/Ships/@thumbs/SPH" \
-  >&2
-echo "Version ${ksp_version}" > "${ksp_dir}/readme.txt"
+ksp_dir, ksp_install_name, ksp_version = *ARGV
 
-ckan ksp forget "${ksp_install_name}" || echo 'false' >/dev/null
-ckan ksp add "${ksp_install_name}" "${ksp_dir}"
-ckan update --ksp "${ksp_install_name}"
+FileUtils::Verbose.rm_rf(ksp_dir)
+FileUtils::Verbose.mkdir_p(
+  [
+    ksp_dir,
+    File.join(ksp_dir, 'CKAN'),
+    File.join(ksp_dir, 'GameData'),
+    File.join(ksp_dir, 'Ships'),
+    File.join(ksp_dir, 'Ships', 'VAB'),
+    File.join(ksp_dir, 'Ships', 'SPH'),
+    File.join(ksp_dir, 'Ships', '@thumbs'),
+    File.join(ksp_dir, 'Ships', '@thumbs', 'VAB'),
+    File.join(ksp_dir, 'Ships', '@thumbs', 'SPH'),
+  ],
+)
+
+File.write(File.join(ksp_dir, 'readme.txt'), "Version #{ksp_version}")
+
+run("ckan ksp forget '#{ksp_install_name}' || echo 'false' >/dev/null")
+run("ckan ksp add '#{ksp_install_name}' '#{ksp_dir}'")
+run("ckan update --ksp '#{ksp_install_name}'")
