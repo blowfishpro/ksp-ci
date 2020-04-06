@@ -16,6 +16,7 @@ Gem::Specification.new do |s|
   s.executables = Dir.children('bin')
   s.homepage = 'https://github.com/blowfishpro/ksp-ci'
   s.license = 'MIT'
+  s.metadata['allowed_push_host'] = 'https://rubygems.pkg.github.com/blowfishpro'
 
   s.add_runtime_dependency 'immutable-struct', '~> 2.4'
   s.add_runtime_dependency 'kramdown', '~> 2.1'
