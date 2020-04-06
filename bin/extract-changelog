@@ -113,7 +113,6 @@ elsif upto_version
   end
 
   raise "No versions found up to #{upto_version}" if selected_versions.empty?
-  raise "First version is not #{upto_version}" if selected_versions.first.raw_version != upto_version
 else
   raise 'nothing to do!'
 end

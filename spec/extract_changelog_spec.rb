@@ -58,6 +58,18 @@ RSpec.describe 'fill-version' do
     expect(output).to eq(expected_output)
   end
 
+  it 'gets all the versions up to a particular version when the version is not matched exactly' do
+    output, _, status = Open3.capture3("#{command} --upto-version v1.0.1", stdin_data: VERSION_DATA)
+    expect(status.success?).to be(true)
+
+    expected_output = <<~MARKDOWN
+      ### v1.0.0
+
+      * Initial release
+    MARKDOWN
+    expect(output).to eq(expected_output)
+  end
+
   it 'gets just one version' do
     output, _, status = Open3.capture3("#{command} --single-version v1.1.0", stdin_data: VERSION_DATA)
     expect(status.success?).to be(true)
@@ -126,11 +138,6 @@ RSpec.describe 'fill-version' do
 
   it 'complains with a version upto that matches other versions but not that exact version' do
     _, _, status = Open3.capture3("#{command} --single-version v1.0.1", stdin_data: VERSION_DATA)
-    expect(status.success?).to be(false)
-  end
-
-  it 'complains with a version upto that matches no version' do
-    _, _, status = Open3.capture3("#{command} --single-version v0.9", stdin_data: VERSION_DATA)
     expect(status.success?).to be(false)
   end
 end
