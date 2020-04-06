@@ -1,4 +1,4 @@
-name: Run tests, build gem, and publish if appropriate
+name: Gem CI
 
 on: [push, pull_request]
 
