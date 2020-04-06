@@ -55,7 +55,7 @@ jobs:
       with:
         name: built-gem
     - name: Publish
-      run: gem push --KEY github --host https://rubygems.pkg.github.com/${OWNER} built-gem/ksp-ci.gem
+      run: gem push --KEY github --host https://rubygems.pkg.github.com/${OWNER} built-gem/*.gem
       env:
         GEM_HOST_API_KEY: ${{secrets.GPR_AUTH_TOKEN}}
         OWNER: username
