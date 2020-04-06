@@ -54,7 +54,6 @@ jobs:
       uses: actions/download-artifact@v1
       with:
         name: ksp-ci.gem
-        path: ksp-ci.gem
     - name: Publish
       run: gem push --KEY github --host https://rubygems.pkg.github.com/${OWNER} ksp-ci.gem
       env:
