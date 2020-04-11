@@ -1,3 +1,7 @@
+# frozen_string_literal: true
+
+require 'open3'
+
 module GitHelper
   def in_git_dir(dir_name = 'tmp_working_dir', commits: 1, tag: nil, commits_since_tag: 0)
     Dir.mktmpdir(dir_name) do |dir|
@@ -10,8 +14,8 @@ module GitHelper
           tag.nil? ? nil : "git tag '#{tag}'",
           Array.new(commits_since_tag) { |index| "git commit --allow-empty -m 'later commit #{index}'" },
         ].flatten.compact.join(" &&\n")
-        `#{git_command}`
-        raise "git command exited with status #{$CHILD_STATUS.exitstatus}" unless $CHILD_STATUS.success?
+        _, status = Open3.capture2 git_command
+        raise "git command exited with status #{status.exitstatus}" unless status.success?
 
         yield dir
       end

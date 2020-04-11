@@ -1,5 +1,7 @@
-require 'English'
+# frozen_string_literal: true
+
 require 'json'
+require 'open3'
 require 'tempfile'
 require 'spec_helper'
 
@@ -7,16 +9,18 @@ RSpec.describe 'install-netkan-deps' do
   command = File.join(Dir.pwd, 'bin', 'install-netkan-deps').freeze
 
   it 'prints version to STDOUT on --version' do
-    s = `#{command} --version`
-    expect($CHILD_STATUS.success?).to be(true)
-    expect(s.strip).to match(/[\d\.]+/)
+    stdout, stderr, status = Open3.capture3 "#{command} --version"
+    expect(status.success?).to be(true)
+    expect(stdout.strip).to match(/[\d\.]+/)
+    expect(stderr).to be_empty
   end
 
   ['-h', '--help'].each do |opt|
     it "prints help to STDERR on #{opt}" do
-      s = `#{command} #{opt} 2>&1 1>/dev/null`
-      expect($CHILD_STATUS.success?).to be(true)
-      expect(s).to eq(<<~OUT)
+      stdout, stderr, status = Open3.capture3 "#{command} #{opt}"
+      expect(status.success?).to be(true)
+      expect(stdout).to be_empty
+      expect(stderr).to eq(<<~OUT)
         usage: #{File.basename(command)} [ckan_ksp_name] [netkan_file] [options]
             -h, --help                  print help
             --version                   print the version
@@ -26,11 +30,11 @@ RSpec.describe 'install-netkan-deps' do
     end
   end
 
-  it 'exits with status 1 if wrong number of arguments are provided' do
-    s = `#{command} a b c 2>&1 1>/dev/null`
-    expect($CHILD_STATUS.success?).to be(false)
-    expect($CHILD_STATUS.exitstatus).to eq(1)
-    expect(s).to eq(<<~OUT)
+  it 'fails if wrong number of arguments are provided' do
+    stdout, stderr, status = Open3.capture3 "#{command} a b c"
+    expect(status.success?).to be(false)
+    expect(stdout).to be_empty
+    expect(stderr).to eq(<<~OUT)
       Wrong number of arguments
       usage: #{File.basename(command)} [ckan_ksp_name] [netkan_file] [options]
           -h, --help                  print help
@@ -40,12 +44,12 @@ RSpec.describe 'install-netkan-deps' do
     OUT
   end
 
-  it 'exits with status 1 if netkan file does not exist' do
+  it 'fails if netkan file does not exist' do
     Dir.mktmpdir('ksp_dir') do |ksp_dir|
-      s = `#{command} '#{ksp_dir}' 'does_not_exist' 2>&1 1>/dev/null`
-      expect($CHILD_STATUS.success?).to be(false)
-      expect($CHILD_STATUS.exitstatus).to eq(1)
-      expect(s.strip).to eq("'does_not_exist' is not a file")
+      stdout, stderr, status = Open3.capture3 "#{command} '#{ksp_dir}' 'does_not_exist'"
+      expect(status.success?).to be(false)
+      expect(stdout).to be_empty
+      expect(stderr.strip).to eq("'does_not_exist' is not a file")
     end
   end
 
@@ -81,11 +85,11 @@ RSpec.describe 'install-netkan-deps' do
         run_command = [
           "PATH=\"#{tmp_path_dir}:${PATH}\"",
           "#{command} 'some_ksp_instance' '#{netkan_file.path}' -x mod3 -x mod4 --exclude mod5 --exclude mod6",
-          '2>&1 1>/dev/null',
         ].join(' ')
-        s = `#{run_command}`
-        expect($CHILD_STATUS.success?).to be(true)
-        expect(s).to eq(<<~OUTPUT)
+        stdout, stderr, status = Open3.capture3 run_command
+        expect(status.success?).to be(true)
+        expect(stdout).to be_empty
+        expect(stderr).to eq(<<~OUTPUT)
           Installing NetKAN dependencies in CKAN KSP instance 'some_ksp_instance' from NetKAN file '#{netkan_file.path}'
           Installing mod1
           <ckan install --headless --no-recommends --ksp some_ksp_instance mod1>

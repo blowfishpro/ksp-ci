@@ -1,16 +1,16 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-require 'English'
 require 'getoptlong'
+require 'open3'
 require 'json'
 
 require 'ksp_ci'
 
 def run(command, puts_result: false)
-  result = `#{command}`
+  result, status = Open3.capture2 command
   warn result if puts_result
-  raise "Command `#{command}` exited with code #{$CHILD_STATUS.exitstatus}" unless $CHILD_STATUS.success?
+  raise "Command `#{command}` exited with code #{status.exitstatus}" unless status.success?
 
   result
 end

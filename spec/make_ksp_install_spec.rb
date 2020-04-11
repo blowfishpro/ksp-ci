@@ -1,4 +1,5 @@
-require 'English'
+# frozen_string_literal: true
+
 require 'open3'
 require 'tempfile'
 require 'spec_helper'
