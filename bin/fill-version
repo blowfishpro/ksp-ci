@@ -50,7 +50,7 @@ end
 class CommandFailure < StandardError; end
 
 def run(command)
-  stdout, _stderr, status = Open3.capture3(command)
+  stdout, status = Open3.capture2(command)
   raise CommandFailure, "Command `#{command}` exited with code #{status.exitstatus}" unless status.success?
 
   stdout
@@ -141,7 +141,7 @@ ksp_version_max = Version.new(ksp_version_max) unless ksp_version_max.nil?
 
 is_git_dir =
   begin
-    run('git rev-parse --git-dir')
+    run('git rev-parse --git-dir 2>/dev/null')
     true
   rescue CommandFailure
     false
