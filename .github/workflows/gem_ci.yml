@@ -47,7 +47,7 @@ jobs:
       - name: Build Gem
         run: gem build *.gemspec
       - name: Upload built gem
-        uses: actions/upload-artifact@v2-preview
+        uses: actions/upload-artifact@v2
         with:
           name: built-gem
           path: "*.gem"
@@ -70,7 +70,7 @@ jobs:
     - name: Set repo owner env
       run: echo "::set-env name=REPO_OWNER::$(echo "${GITHUB_REPOSITORY}" | cut -d '/' -f 1)"
     - name: Download built gem
-      uses: actions/download-artifact@v1
+      uses: actions/download-artifact@v2
       with:
         name: built-gem
     - name: Publish
