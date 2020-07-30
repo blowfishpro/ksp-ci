@@ -36,6 +36,8 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
+    outputs:
+      built-gem-name: ${{ steps.build-gem.outputs.built-gem-name }}
 
     steps:
       - uses: actions/checkout@v2
@@ -45,12 +47,15 @@ jobs:
         run: git fetch --depth=1 origin +refs/tags/*:refs/tags/*
       - uses: ruby/setup-ruby@v1
       - name: Build Gem
-        run: gem build *.gemspec
+        id: build-gem
+        run: |
+          gem build *.gemspec
+          echo "::set-output name=built-gem-name::$(ls *.gem)"
       - name: Upload built gem
         uses: actions/upload-artifact@v2
         with:
-          name: built-gem
-          path: "*.gem"
+          name: ${{ steps.build-gem.outputs.built-gem-name }}
+          path: ${{ steps.build-gem.outputs.built-gem-name }}
   publish:
     name: Publish
     runs-on: ubuntu-latest
@@ -72,6 +77,6 @@ jobs:
     - name: Download built gem
       uses: actions/download-artifact@v2
       with:
-        name: built-gem
+        name: ${{ needs.build.outputs.built-gem-name }}
     - name: Publish
-      run: gem push --KEY github --host https://rubygems.pkg.github.com/${REPO_OWNER} built-gem/*.gem
+      run: gem push --KEY github --host https://rubygems.pkg.github.com/${REPO_OWNER} '${{ needs.build.outputs.built-gem-name }}'
