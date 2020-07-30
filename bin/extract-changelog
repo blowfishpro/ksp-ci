@@ -86,7 +86,7 @@ document.root.children.each do |child|
   end
 end
 
-changelog_versions.each do |content:, **|
+changelog_versions.map(&:content).each do |content|
   content.shift while content.first.type == :blank
   content.pop while content.last.type == :blank
 end
