@@ -12,7 +12,7 @@ jobs:
         with:
           fetch-depth: 100
       - name: Fetch tags
-        run: git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+        run: git fetch --depth=1 --tags origin
       - uses: ruby/setup-ruby@v1
       - name: Install Gems
         run: bundle install
@@ -27,7 +27,7 @@ jobs:
         with:
           fetch-depth: 100
       - name: Fetch tags
-        run: git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+        run: git fetch --depth=1 --tags origin
       - uses: actions/setup-ruby@v1
       - name: Install Gems
         run: bundle install
@@ -45,7 +45,7 @@ jobs:
         with:
           fetch-depth: 100
       - name: Fetch tags
-        run: git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+        run: git fetch --depth=1 --tags origin
       - uses: ruby/setup-ruby@v1
       - name: Build Gem
         id: build-gem
