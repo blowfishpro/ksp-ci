@@ -37,6 +37,7 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     outputs:
+      ruby-version: ${{ steps.build-gem.outputs.ruby-version }}
       built-gem-name: ${{ steps.build-gem.outputs.built-gem-name }}
 
     steps:
@@ -50,6 +51,7 @@ jobs:
         id: build-gem
         run: |
           gem build *.gemspec
+          echo "::set-output name=ruby-version::$(cat .ruby-version)"
           echo "::set-output name=built-gem-name::$(ls *.gem)"
       - name: Upload built gem
         uses: actions/upload-artifact@v2
@@ -64,6 +66,8 @@ jobs:
 
     steps:
     - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ needs.build.outputs.ruby-version }}
     - name: Setup publishing credentials
       env:
         GEM_HOST_API_KEY: ${{ secrets.GITHUB_TOKEN }}
