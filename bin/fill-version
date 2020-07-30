@@ -155,7 +155,7 @@ mod_version =
   elsif ENV['MOD_VERSION']
     Version.new(ENV['MOD_VERSION'])
   elsif is_git_dir
-    Version.new(git_version.match(/[0-9\.-]+/)[0].tr('-', '.'))
+    Version.new(git_version.match(/[0-9.-]+/)[0].tr('-', '.'))
   else
     warn 'mod version not specified and no way to determine it'
     exit 1

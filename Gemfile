@@ -6,5 +6,5 @@ group :development, :test do
   gem 'irb', '~> 1.2'
   gem 'rake', '~> 13.0'
   gem 'rspec', '~> 3.9'
-  gem 'rubocop', '~> 0.76.0'
+  gem 'rubocop', '~> 0.88.0'
 end

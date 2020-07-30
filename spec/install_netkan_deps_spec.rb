@@ -11,7 +11,7 @@ RSpec.describe 'install-netkan-deps' do
   it 'prints version to STDOUT on --version' do
     stdout, stderr, status = Open3.capture3 "#{command} --version"
     expect(status.success?).to be(true)
-    expect(stdout.strip).to match(/[\d\.]+/)
+    expect(stdout.strip).to match(/[\d.]+/)
     expect(stderr).to be_empty
   end
 
