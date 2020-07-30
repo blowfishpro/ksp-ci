@@ -13,7 +13,7 @@ jobs:
           fetch-depth: 100
       - name: Fetch tags
         run: git fetch --depth=1 origin +refs/tags/*:refs/tags/*
-      - uses: actions/setup-ruby@v1
+      - uses: ruby/setup-ruby@v1
       - name: Install Gems
         run: bundle install
       - name: Run Rubocop
@@ -43,7 +43,7 @@ jobs:
           fetch-depth: 100
       - name: Fetch tags
         run: git fetch --depth=1 origin +refs/tags/*:refs/tags/*
-      - uses: actions/setup-ruby@v1
+      - uses: ruby/setup-ruby@v1
       - name: Build Gem
         run: gem build *.gemspec
       - name: Upload built gem
@@ -58,7 +58,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
 
     steps:
-    - uses: actions/setup-ruby@v1
+    - uses: ruby/setup-ruby@v1
     - name: Setup publishing credentials
       env:
         GEM_HOST_API_KEY: ${{ secrets.GITHUB_TOKEN }}
