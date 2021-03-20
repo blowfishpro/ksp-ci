@@ -4,9 +4,9 @@
 require 'fileutils'
 require 'open3'
 
-def run(cmd)
-  out, status = Open3.capture2(cmd)
-  raise "Command failed with exit code #{status.exitstatus}" unless status.success?
+def run(*cmd, ignore: false)
+  out, status = Open3.capture2(*cmd)
+  raise "Command failed with exit code #{status.exitstatus}" unless status.success? || ignore
 
   out
 end
@@ -35,6 +35,6 @@ FileUtils::Verbose.mkdir_p(
 
 File.write(File.join(ksp_dir, 'readme.txt'), "Version #{ksp_version}")
 
-run("ckan ksp forget '#{ksp_install_name}' || echo 'false' >/dev/null")
-run("ckan ksp add '#{ksp_install_name}' '#{ksp_dir}'")
-run("ckan update --ksp '#{ksp_install_name}'")
+run('ckan', 'ksp', 'forget', ksp_install_name, ignore: true)
+run('ckan', 'ksp', 'add', ksp_install_name, ksp_dir)
+run('ckan', 'update', '--ksp', ksp_install_name)

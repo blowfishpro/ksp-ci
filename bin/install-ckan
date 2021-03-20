@@ -8,7 +8,7 @@ CKAN_DIR = File.join('/', 'opt', 'ckan')
 CKAN_FILE = File.join(CKAN_DIR, 'ckan.exe')
 CKAN_EXECUTABLE = File.join('/', 'usr', 'local', 'bin', 'ckan')
 
-out, status = Open3.capture2('which mono')
+out, status = Open3.capture2('which', 'mono')
 raise 'mono is not installed' unless status.success? && !out.empty?
 
 FileUtils::Verbose.rm_f CKAN_DIR

@@ -2,7 +2,7 @@
 
 require 'open3'
 
-git_tag, status = Open3.capture2('git describe --tags --dirty')
+git_tag, status = Open3.capture2('git', 'describe', '--tags', '--dirty')
 raise 'Could not get version from git' unless status.success?
 
 git_version = git_tag.delete_prefix('v').strip

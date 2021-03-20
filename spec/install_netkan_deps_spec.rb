@@ -9,7 +9,7 @@ RSpec.describe 'install-netkan-deps' do
   command = File.join(Dir.pwd, 'bin', 'install-netkan-deps').freeze
 
   it 'prints version to STDOUT on --version' do
-    stdout, stderr, status = Open3.capture3 "#{command} --version"
+    stdout, stderr, status = Open3.capture3 command, '--version'
     expect(status.success?).to be(true)
     expect(stdout.strip).to match(/[\d.]+/)
     expect(stderr).to be_empty
@@ -17,7 +17,7 @@ RSpec.describe 'install-netkan-deps' do
 
   ['-h', '--help'].each do |opt|
     it "prints help to STDERR on #{opt}" do
-      stdout, stderr, status = Open3.capture3 "#{command} #{opt}"
+      stdout, stderr, status = Open3.capture3 command, opt
       expect(status.success?).to be(true)
       expect(stdout).to be_empty
       expect(stderr).to eq(<<~OUT)
@@ -31,7 +31,7 @@ RSpec.describe 'install-netkan-deps' do
   end
 
   it 'fails if wrong number of arguments are provided' do
-    stdout, stderr, status = Open3.capture3 "#{command} a b c"
+    stdout, stderr, status = Open3.capture3 command, 'a', 'b', 'c'
     expect(status.success?).to be(false)
     expect(stdout).to be_empty
     expect(stderr).to eq(<<~OUT)
@@ -46,7 +46,7 @@ RSpec.describe 'install-netkan-deps' do
 
   it 'fails if netkan file does not exist' do
     Dir.mktmpdir('ksp_dir') do |ksp_dir|
-      stdout, stderr, status = Open3.capture3 "#{command} '#{ksp_dir}' 'does_not_exist'"
+      stdout, stderr, status = Open3.capture3 command, ksp_dir, 'does_not_exist'
       expect(status.success?).to be(false)
       expect(stdout).to be_empty
       expect(stderr.strip).to eq("'does_not_exist' is not a file")
@@ -82,11 +82,11 @@ RSpec.describe 'install-netkan-deps' do
         )
         netkan_file.flush
 
-        run_command = [
-          "PATH=\"#{tmp_path_dir}:${PATH}\"",
-          "#{command} 'some_ksp_instance' '#{netkan_file.path}' -x mod3 -x mod4 --exclude mod5 --exclude mod6",
-        ].join(' ')
-        stdout, stderr, status = Open3.capture3 run_command
+        stdout, stderr, status = Open3.capture3(
+          { 'PATH' => "#{tmp_path_dir}:#{ENV['PATH']}" },
+          command, 'some_ksp_instance', netkan_file.path,
+          '-x', 'mod3', '-x', 'mod4', '--exclude', 'mod5', '--exclude', 'mod6',
+        )
         expect(status.success?).to be(true)
         expect(stdout).to be_empty
         expect(stderr).to eq(<<~OUTPUT)

@@ -7,10 +7,10 @@ require 'json'
 
 require 'ksp_ci'
 
-def run(command, puts_result: false)
-  result, status = Open3.capture2 command
+def run(*command, puts_result: false)
+  result, status = Open3.capture2(*command)
   warn result if puts_result
-  raise "Command `#{command}` exited with code #{status.exitstatus}" unless status.success?
+  raise "Command #{command} exited with code #{status.exitstatus}" unless status.success?
 
   result
 end
@@ -73,5 +73,5 @@ dependencies.each do |dependency|
   next if exclude_mods.include? dependency
 
   warn "Installing #{dependency}"
-  run("ckan install --headless --no-recommends --ksp '#{ckan_ksp_name}' #{dependency}", puts_result: true)
+  run('ckan', 'install', '--headless', '--no-recommends', '--ksp', ckan_ksp_name, dependency, puts_result: true)
 end
