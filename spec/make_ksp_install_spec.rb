@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require 'open3'
 require 'tempfile'
 require 'spec_helper'
+require 'helpers/virtual_script_executor'
 
 RSpec.describe 'make-ksp-install' do
   command = File.join(Dir.pwd, 'bin', 'make-ksp-install').freeze
@@ -22,9 +22,9 @@ RSpec.describe 'make-ksp-install' do
 
         Dir.mktmpdir('ksp_install_tmp') do |ksp_install_tmp|
           ksp_install_dir = File.join(ksp_install_tmp, 'dummy_ksp_install_dir')
-          _, _, status = Open3.capture3(
-            { 'PATH' => "#{tmp_path_dir}:#{ENV['PATH']}" },
+          _, _, status = execute_script(
             command, ksp_install_dir, 'dummy_ksp_install', '1.2.3',
+            env: { 'PATH' => "#{tmp_path_dir}:#{ENV['PATH']}" },
           )
           expect(status.success?).to be(true)
           expect(File.read(ckan_command_log.path)).to eq(<<~CMD)
@@ -65,9 +65,9 @@ RSpec.describe 'make-ksp-install' do
           FileUtils.mkdir(ksp_install_dir)
           pre_existing_file = File.join(ksp_install_dir, 'some_file')
           FileUtils.touch(pre_existing_file)
-          _, _, status = Open3.capture3(
-            { 'PATH' => "#{tmp_path_dir}:#{ENV['PATH']}" },
+          _, _, status = execute_script(
             command, ksp_install_dir, 'dummy_ksp_install', '1.2.3',
+            env: { 'PATH' => "#{tmp_path_dir}:#{ENV['PATH']}" },
           )
           expect(status.success?).to be(true)
           expect(Dir.exist?(ksp_install_dir)).to be(true)
@@ -93,9 +93,9 @@ RSpec.describe 'make-ksp-install' do
 
         Dir.mktmpdir('ksp_install_tmp') do |ksp_install_tmp|
           ksp_install_dir = File.join(ksp_install_tmp, 'dummy_ksp_install_dir')
-          _, _, status = Open3.capture3(
-            { 'PATH' => "#{tmp_path_dir}:#{ENV['PATH']}" },
+          _, _, status = execute_script(
             command, ksp_install_dir, 'dummy_ksp_install', '1.2.3',
+            env: { 'PATH' => "#{tmp_path_dir}:#{ENV['PATH']}" },
           )
           expect(status.success?).to be(true)
           expect(Dir.exist?(ksp_install_dir)).to be(true)
@@ -106,7 +106,7 @@ RSpec.describe 'make-ksp-install' do
   end
 
   it 'prints usage when the wrong number of arguments are given' do
-    _, err, status = Open3.capture3(command, 'one', 'two')
+    _, err, status = execute_script(command, 'one', 'two')
     expect(status.success?).to be(false)
     expect(err).to eq("Usage - make-ksp-install [ksp_dir] [ksp_install_name] [ksp_version]\n")
   end

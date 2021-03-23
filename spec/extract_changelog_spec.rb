@@ -1,9 +1,8 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
-
-require 'open3'
 require 'tempfile'
+require 'spec_helper'
+require 'helpers/virtual_script_executor'
 
 VERSION_DATA = <<~MARKDOWN
   # Changelog
@@ -29,21 +28,21 @@ RSpec.describe 'fill-version' do
   command = File.join(Dir.pwd, 'bin', 'extract-changelog').freeze
 
   it 'prints version to STDOUT on --version' do
-    stdout, stderr, status = Open3.capture3(command, '--version')
+    stdout, stderr, status = execute_script(command, '--version')
     expect(status.success?).to be(true)
     expect(stdout.strip).to match(/[\d.]+/)
     expect(stderr).to be_empty
   end
 
   it 'prints help to STDERR on --help' do
-    stdout, stderr, status = Open3.capture3(command, '--help')
+    stdout, stderr, status = execute_script(command, '--help')
     expect(status.success?).to be(true)
     expect(stdout).to be_empty
     expect(stderr).to match(/usage:/)
   end
 
   it 'gets all the versions up to a particular version' do
-    stdout, stderr, status = Open3.capture3(command, '--upto-version', 'v1.1.0', stdin_data: VERSION_DATA)
+    stdout, stderr, status = execute_script(command, '--upto-version', 'v1.1.0', stdin_data: VERSION_DATA)
     expect(status.success?).to be(true)
 
     expected_output = <<~MARKDOWN
@@ -61,7 +60,7 @@ RSpec.describe 'fill-version' do
   end
 
   it 'gets all the versions up to a particular version when the version is not matched exactly' do
-    stdout, stderr, status = Open3.capture3(command, '--upto-version', 'v1.0.1', stdin_data: VERSION_DATA)
+    stdout, stderr, status = execute_script(command, '--upto-version', 'v1.0.1', stdin_data: VERSION_DATA)
     expect(status.success?).to be(true)
 
     expected_output = <<~MARKDOWN
@@ -74,7 +73,7 @@ RSpec.describe 'fill-version' do
   end
 
   it 'gets just one version' do
-    stdout, stderr, status = Open3.capture3(command, '--single-version', 'v1.1.0', stdin_data: VERSION_DATA)
+    stdout, stderr, status = execute_script(command, '--single-version', 'v1.1.0', stdin_data: VERSION_DATA)
     expect(status.success?).to be(true)
 
     expected_output = <<~MARKDOWN
@@ -91,7 +90,7 @@ RSpec.describe 'fill-version' do
     Tempfile.open(['changelog', '.md']) do |tempfile|
       tempfile.write VERSION_DATA
       tempfile.flush
-      output, _, status = Open3.capture3(command, '-s', 'v1.1.0', '--in-file', tempfile.path)
+      output, _, status = execute_script(command, '-s', 'v1.1.0', '--in-file', tempfile.path)
       expect(status.success?).to be(true)
 
       expected_output = <<~MARKDOWN
@@ -106,7 +105,7 @@ RSpec.describe 'fill-version' do
 
   it 'uses an output file' do
     Tempfile.open(['changelog', '.md']) do |tempfile|
-      stdout, stderr, status = Open3.capture3(
+      stdout, stderr, status = execute_script(
         command, '-s', 'v1.1.0', '--out-file', tempfile.path,
         stdin_data: VERSION_DATA,
       )
@@ -125,35 +124,35 @@ RSpec.describe 'fill-version' do
   end
 
   it 'complains if both upto version and single version are specified' do
-    stdout, stderr, status = Open3.capture3(command, '-s', 'v1.1.0', '-u', 'v1.1.0', stdin_data: VERSION_DATA)
+    stdout, stderr, status = execute_script(command, '-s', 'v1.1.0', '-u', 'v1.1.0', stdin_data: VERSION_DATA)
     expect(status.success?).to be(false)
     expect(stdout).to be_empty
     expect(stderr).not_to be_empty
   end
 
   it 'complains if neither upto version and single version are specified' do
-    stdout, stderr, status = Open3.capture3(command, stdin_data: VERSION_DATA)
+    stdout, stderr, status = execute_script(command, stdin_data: VERSION_DATA)
     expect(status.success?).to be(false)
     expect(stdout).to be_empty
     expect(stderr).not_to be_empty
   end
 
   it 'complains with empty input' do
-    stdout, stderr, status = Open3.capture3(command, '--single-version', 'v1.1.0')
+    stdout, stderr, status = execute_script(command, '--single-version', 'v1.1.0')
     expect(status.success?).to be(false)
     expect(stdout).to be_empty
     expect(stderr).not_to be_empty
   end
 
   it 'complains with an input version that is not matched' do
-    stdout, stderr, status = Open3.capture3(command, '--single-version', 'v1.0.1', stdin_data: VERSION_DATA)
+    stdout, stderr, status = execute_script(command, '--single-version', 'v1.0.1', stdin_data: VERSION_DATA)
     expect(status.success?).to be(false)
     expect(stdout).to be_empty
     expect(stderr).not_to be_empty
   end
 
   it 'complains with a version upto that matches other versions but not that exact version' do
-    stdout, stderr, status = Open3.capture3(command, '--single-version', 'v1.0.1', stdin_data: VERSION_DATA)
+    stdout, stderr, status = execute_script(command, '--single-version', 'v1.0.1', stdin_data: VERSION_DATA)
     expect(status.success?).to be(false)
     expect(stdout).to be_empty
     expect(stderr).not_to be_empty

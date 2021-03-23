@@ -58,7 +58,7 @@ end
 
 def usage
   warn <<~USAGE
-    usage: #{File.basename(__FILE__)} [in_erb_file] [out_file] [options]
+    usage: #{File.basename($PROGRAM_NAME)} [in_erb_file] [out_file] [options]
       -h, --help                       print help
       --version                        print the version
       -k, --ksp-version [ksp version]  KSP version
@@ -160,17 +160,17 @@ mod_version =
   end
 
 if verbose
-  warn "#{__FILE__}: filling version info into ERB template"
-  warn "#{__FILE__}: ksp version: #{ksp_version}"
-  warn "#{__FILE__}: ksp version max: #{ksp_version_max}"
-  warn "#{__FILE__}: ksp version min: #{ksp_version_min}"
-  warn "#{__FILE__}: mod version: #{mod_version}"
-  warn "#{__FILE__}: '#{in_file || 'STDIN'}' -> '#{out_file || 'STDOUT'}'"
+  warn "#{$PROGRAM_NAME}: filling version info into ERB template"
+  warn "#{$PROGRAM_NAME}: ksp version: #{ksp_version}"
+  warn "#{$PROGRAM_NAME}: ksp version max: #{ksp_version_max}"
+  warn "#{$PROGRAM_NAME}: ksp version min: #{ksp_version_min}"
+  warn "#{$PROGRAM_NAME}: mod version: #{mod_version}"
+  warn "#{$PROGRAM_NAME}: '#{in_file || 'STDIN'}' -> '#{out_file || 'STDOUT'}'"
 end
 
 template_contents =
   if in_file.nil?
-    STDIN.read
+    $stdin.read
   elsif File.file?(in_file)
     File.read(in_file)
   else
@@ -182,7 +182,7 @@ view_model = FillVersionViewModel.new(ksp_version, ksp_version_min, ksp_version_
 result = view_model.render(template_contents)
 
 if out_file.nil?
-  STDOUT.puts result
+  $stdout.puts result
 else
   File.open(out_file, 'w+') do |f|
     f.write result

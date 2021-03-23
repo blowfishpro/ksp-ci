@@ -17,7 +17,7 @@ end
 
 def usage
   warn <<~USAGE
-    usage: #{File.basename(__FILE__)} [ckan_ksp_name] [netkan_file] [options]
+    usage: #{File.basename($PROGRAM_NAME)} [ckan_ksp_name] [netkan_file] [options]
         -h, --help                  print help
         --version                   print the version
         -x, --exclude [identifier]  exclude mod with this identifier (do not install)

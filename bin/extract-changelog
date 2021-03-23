@@ -13,7 +13,7 @@ ChangelogVersion = ImmutableStruct.new(:version, :raw_version, [:content])
 
 def usage
   warn <<~USAGE
-    usage: #{File.basename(__FILE__)} [options]
+    usage: #{File.basename($PROGRAM_NAME)} [options]
       -h, --help                      print help
       --version                       print the version
       -v, --verbose                   verbose logging
@@ -61,12 +61,22 @@ opts.each do |opt, arg|
   end
 end
 
-raise 'Cannot use both upto-version and single-version' if upto_version && single_version
-raise 'Need upto-version or single-version' if upto_version.nil? && single_version.nil?
+if upto_version && single_version
+  warn 'Cannot use both upto-version and single-version'
+  exit 1
+end
+
+if upto_version.nil? && single_version.nil?
+  warn 'Need upto-version or single-version'
+  exit 1
+end
 
 in_file_contents = in_file_path.nil? ? $stdin.read : File.read(in_file_path)
 
-raise 'input is empty!' if in_file_contents.strip.empty?
+if in_file_contents.strip.empty?
+  warn 'input is empty!'
+  exit 1
+end
 
 document = Kramdown::Document.new(in_file_contents)
 
@@ -96,10 +106,14 @@ if single_version
     version.raw_version == single_version
   end
 
-  raise "No versions found matching #{single_version}" if selected_versions.empty?
+  if selected_versions.empty?
+    warn "No versions found matching #{single_version}"
+    exit 1
+  end
 
   if selected_versions.size > 1
-    raise "Too many (#{selected_versions.size}) versions found matching #{single_version} (expected exactly one)"
+    warn "Too many (#{selected_versions.size}) versions found matching #{single_version} (expected exactly one)"
+    exit 1
   end
 elsif upto_version
   version_match = upto_version.match VESION_REGEX
@@ -112,9 +126,13 @@ elsif upto_version
     -(v1.version <=> v2.version)
   end
 
-  raise "No versions found up to #{upto_version}" if selected_versions.empty?
+  if selected_versions.empty?
+    warn "No versions found up to #{upto_version}"
+    exit 1
+  end
 else
-  raise 'nothing to do!'
+  warn 'nothing to do!'
+  exit 1
 end
 
 new_root = Kramdown::Element.new(:root, nil, nil, encoding: Encoding::UTF_8)

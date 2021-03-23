@@ -12,7 +12,7 @@ def run(*cmd, ignore: false)
 end
 
 if ARGV.size != 3
-  warn "Usage - #{File.basename(__FILE__)} [ksp_dir] [ksp_install_name] [ksp_version]"
+  warn "Usage - #{File.basename($PROGRAM_NAME)} [ksp_dir] [ksp_install_name] [ksp_version]"
   exit 1
 end
 
