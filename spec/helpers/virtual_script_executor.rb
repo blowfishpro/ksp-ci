@@ -7,6 +7,7 @@ class VirtualScriptExecutor
     attr_reader :status
 
     def initialize(status)
+      super("script exited with code #{status}")
       @status = status
     end
   end

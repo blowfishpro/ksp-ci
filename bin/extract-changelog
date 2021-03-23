@@ -7,7 +7,7 @@ require 'kramdown'
 
 require 'ksp_ci'
 
-VESION_REGEX = /v(?<version>\d(?:[\d.]*\d)?)/.freeze
+VESION_REGEX = /v(?<version>\d(?:[\d.]*\d)?)/
 
 ChangelogVersion = ImmutableStruct.new(:version, :raw_version, [:content])
 
