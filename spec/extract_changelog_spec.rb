@@ -144,11 +144,4 @@ RSpec.describe 'fill-version' do
     expect(stdout).to be_empty
     expect(stderr).not_to be_empty
   end
-
-  it 'complains with a version upto that matches other versions but not that exact version' do
-    stdout, stderr, status = execute_script(command, '--single-version', 'v1.0.1', stdin_data: VERSION_DATA)
-    expect(status.success?).to be(false)
-    expect(stdout).to be_empty
-    expect(stderr).not_to be_empty
-  end
 end
