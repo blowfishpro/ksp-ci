@@ -138,9 +138,11 @@ end
 new_root = Kramdown::Element.new(:root, nil, nil, encoding: Encoding::UTF_8)
 
 selected_versions.each do |changelog_version|
-  header = Kramdown::Element.new(:header, nil, nil, level: 3)
-  header.children << Kramdown::Element.new(:text, changelog_version.raw_version)
-  new_root.children << header
+  unless single_version
+    header = Kramdown::Element.new(:header, nil, nil, level: 3)
+    header.children << Kramdown::Element.new(:text, changelog_version.raw_version)
+    new_root.children << header
+  end
   new_root.children << Kramdown::Element.new(:blank, "\n")
   new_root.children.concat changelog_version.content
   new_root.children << Kramdown::Element.new(:blank, "\n")

@@ -77,8 +77,6 @@ RSpec.describe 'fill-version' do
     expect(status.success?).to be(true)
 
     expected_output = <<~MARKDOWN
-      ### v1.1.0
-
       * add a feature
       * fix a bug
     MARKDOWN
@@ -94,8 +92,6 @@ RSpec.describe 'fill-version' do
       expect(status.success?).to be(true)
 
       expected_output = <<~MARKDOWN
-        ### v1.1.0
-
         * add a feature
         * fix a bug
       MARKDOWN
@@ -114,8 +110,6 @@ RSpec.describe 'fill-version' do
       expect(stderr).to be_empty
 
       expected_output = <<~MARKDOWN
-        ### v1.1.0
-
         * add a feature
         * fix a bug
       MARKDOWN
