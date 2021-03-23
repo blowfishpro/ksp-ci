@@ -31,6 +31,8 @@ jobs:
       - uses: actions/setup-ruby@v1
       - name: Install Gems
         run: bundle install
+      - name: Set default branch for new git repos
+        run: git config --global init.defaultBranch trunk
       - name: Run Tests
         run: bundle exec rake spec
   build:
